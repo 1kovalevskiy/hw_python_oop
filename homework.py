@@ -1,4 +1,5 @@
 import datetime as dt
+from typing import Union
 
 
 class Calculator:
@@ -6,62 +7,61 @@ class Calculator:
     Класс калькулятора, от которого наследуются класс калькулятора денег,
     а также класс калькулятора каллорий.
     Является шаблоном, поэтому в нем определены общие методы, как:
-    add_record(), get_today_stats(), get_week_stats()
+    add_record(), get_today_stats(), get_week_stats().
     """
-    def __init__(self, limit):
+    def __init__(self, limit: Union[int, float]) -> None:
         self.limit = limit
         self.records = []
 
-    def add_record(self, other):
+    def add_record(self, other) -> None:
         self.records.append(other)
 
-    def get_today_stats(self):
+    def check_limit(self) -> Union[int, float]:
+        return self.limit - self.get_today_stats()
+
+    def get_today_stats(self) -> Union[int, float]:
         self.today_value = 0
-        for record in self.records:
-            if record.date == dt.datetime.now().date():
-                self.today_value += record.amount
+        self.today_value = sum([record.amount for record in self.records
+                                if record.date == dt.datetime.now().date()])
         return self.today_value
 
-    def get_week_stats(self):
-        """
-        days=7
-        weeks=1
-        """
+    def check_timedelta_is_week(self, date) -> bool:
+        if (dt.date.today() - date < dt.timedelta(weeks=1)
+                and date <= dt.date.today()):
+            return True
+        return False
+
+    def get_week_stats(self) -> Union[int, float]:
         self.week_value = 0
-        for record in self.records:
-            timedelta = dt.datetime.now().date() - record.date
-            if (timedelta < dt.timedelta(weeks=1)
-                    and record.date <= dt.datetime.now().date()):
-                self.week_value += record.amount
+        self.week_value = sum([record.amount for record in self.records
+                               if self.check_timedelta_is_week(record.date)])
         return self.week_value
 
 
 class Record:
     """
-    Шаблон записей о расходах или о полученных каллориях
+    Шаблон записей о расходах или о полученных каллориях.
     """
-    def __init__(self, amount, comment, date=None):
+    def __init__(self, amount: Union[int, float],
+                 comment: str,
+                 date=None) -> None:
         self.amount = amount
         self.comment = comment
         if date:
-            self.date = dt.datetime.strptime(date, '%d.%m.%Y')
+            self.date = dt.datetime.strptime(date, '%d.%m.%Y').date()
         else:
-            self.date = dt.datetime.now()
-        self.date = self.date.date()
+            self.date = dt.date.today()
 
 
 class CaloriesCalculator(Calculator):
-    def get_calories_remained(self):
-        self.today_calories_remained = self.limit - self.get_today_stats()
+    def get_calories_remained(self) -> str:
+        self.today_calories_remained = self.check_limit()
         if self.today_calories_remained > 0:
-            self.remained_value_message = (
+            return (
                 "Сегодня можно съесть "
                 "что-нибудь ещё, но с общей калорийностью не более "
                 f"{str(self.today_calories_remained)} кКал")
-            return self.remained_value_message
-        else:
-            self.remained_value_message = "Хватит есть!"
-            return self.remained_value_message
+        return "Хватит есть!"
 
 
 class CashCalculator(Calculator):
@@ -90,21 +90,22 @@ class CashCalculator(Calculator):
         return self.remained_value_message
 
 
-cash_calculator = CashCalculator(1000)
+if __name__ == '__main__':
+    cash_calculator = CashCalculator(1000)
 
-# дата в параметрах не указана,git add .
-# так что по умолчанию к записи
-# должна автоматически добавиться сегодняшняя дата
-cash_calculator.add_record(Record(amount=145, comment='кофе'))
-# и к этой записи тоже дата должна добавиться автоматически
-cash_calculator.add_record(Record(amount=1000, comment='Серёге за обед'))
-# а тут пользователь указал дату, сохраняем её
-cash_calculator.add_record(Record(amount=3000,
-                                  comment='бар в Танин др',
-                                  date='04.06.2021'))
-cash_calculator.add_record(Record(amount=3000,
-                                  comment='бар',
-                                  date='30.05.2021'))
-print(cash_calculator.get_week_stats())
-for record in cash_calculator.records:
-    print(f"{record.date}")
+    # дата в параметрах не указана,git add .
+    # так что по умолчанию к записи
+    # должна автоматически добавиться сегодняшняя дата
+    cash_calculator.add_record(Record(amount=145, comment='кофе'))
+    # и к этой записи тоже дата должна добавиться автоматически
+    cash_calculator.add_record(Record(amount=1000, comment='Серёге за обед'))
+    # а тут пользователь указал дату, сохраняем её
+    cash_calculator.add_record(Record(amount=3000,
+                                    comment='бар в Танин др',
+                                    date='04.06.2021'))
+    cash_calculator.add_record(Record(amount=3000,
+                                    comment='бар',
+                                    date='30.05.2021'))
+    print(cash_calculator.get_week_stats())
+    for record in cash_calculator.records:
+        print(f"{record.date}")
