@@ -34,7 +34,7 @@ class Calculator:
 
 class Record:
     """
-    Record template of purchase of meal.
+    Record template of purchase or meal.
     """
     def __init__(self, amount: Union[int, float],
                  comment: str,
