@@ -68,6 +68,7 @@ class CashCalculator(Calculator):
     """
     USD_RATE: float = 72.0
     EURO_RATE: float = 88.0
+    POUND_RATE: float = 100.0
 
     def get_today_cash_remained(self, currency: str) -> str:
         """
@@ -78,10 +79,12 @@ class CashCalculator(Calculator):
             return "Денег нет, держись"
         cash_now["usd"] = (cash_now["rub"][0] / self.USD_RATE, "USD")
         cash_now["eur"] = (cash_now["rub"][0] / self.EURO_RATE, "Euro")
+        cash_now["gbp"] = (cash_now["rub"][0] / self.POUND_RATE, "Pound")
+
         try:
             money_value, money_currency = cash_now[currency]
         except Exception:
-            raise "Такой валюты не существует"
+            raise ValueError("Такой валюты не существует")
         if money_value > 0:
             return f"На сегодня осталось {money_value:.2f} {money_currency}"
         else:
@@ -90,7 +93,7 @@ class CashCalculator(Calculator):
 
 
 if __name__ == '__main__':
-    cash_calculator = CashCalculator(1000)
+    cash_calculator = CashCalculator(2000)
     cash_calculator.add_record(Record(amount=145, comment='кофе'))
     cash_calculator.add_record(Record(amount=860, comment='Серёге за обед'))
     cash_calculator.add_record(Record(amount=3000,
@@ -99,6 +102,6 @@ if __name__ == '__main__':
     cash_calculator.add_record(Record(amount=3000,
                                       comment='бар',
                                       date='30.05.2021'))
-    print(cash_calculator.get_today_cash_remained("eur"))
+    print(cash_calculator.get_today_cash_remained("gbp"))
     for record in cash_calculator.records:
         print(f"{record.date}")
