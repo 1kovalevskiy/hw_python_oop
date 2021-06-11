@@ -65,41 +65,44 @@ class CaloriesCalculator(Calculator):
 
 
 class CashCalculator(Calculator):
-    USD_RATE = 72.0
-    EURO_RATE = 88.0
+    USD_RATE: float = 72.0
+    EURO_RATE: float = 88.0
 
-    def get_today_cash_remained(self, currency):
-        self.today_cash_value = self.get_today_stats()
-        if self.today_cash_value < self.limit:
-            self.remained_value_message = "На сегодня осталось "
-            self.remained_cash = self.limit - self.today_cash_value
-        elif self.today_cash_value == self.limit:
-            self.remained_value_message = "Денег нет, держись"
+    def get_today_cash_remained(self, currency: str) -> str:
+        self.cash_now = {"rub": self.check_limit()}
+        if self.cash_now["rub"] == 0:
+            return "Денег нет, держись"
+        self.cash_now["usd"] = self.cash_now["rub"] / self.USD_RATE
+        self.cash_now["eur"] = self.cash_now["rub"] / self.EURO_RATE
+        if self.cash_now["rub"] > 0:
+            self.cash_now["message"] = (
+                "На сегодня осталось ")
+            self.cash_now["money"] = self.cash_now[currency]
         else:
-            self.remained_value_message = "Денег нет, держись: твой долг - "
-            self.remained_cash = self.today_cash_value - self.limit
-        if currency == 'rub' and self.today_cash_value != self.limit:
-            self.remained_value_message += f"{self.remained_cash} руб"
-        elif currency == 'usd' and self.today_cash_value != self.limit:
-            self.remained_cash_usd = self.remained_cash / self.USD_RATE
-            self.remained_value_message += f"{self.remained_cash_usd:.2f} USD"
-        elif currency == "eur" and self.today_cash_value != self.limit:
-            self.remained_cash_euro = self.remained_cash / self.EURO_RATE
-            self.remained_value_message += (
-                f"{self.remained_cash_euro:.2f} Euro")
-        return self.remained_value_message
+            self.cash_now["message"] = (
+                "Денег нет, держись: твой долг - ")
+            self.cash_now["money"] = -self.cash_now[currency]
+        if currency == "rub":
+            self.cash_now["currency"] = " руб"
+        elif currency == "usd":
+            self.cash_now["currency"] = " USD"
+        elif currency == "eur":
+            self.cash_now["currency"] = " Euro"
+        return (f'{self.cash_now["message"]}'
+                f'{self.cash_now["money"]:.2f}'
+                f'{self.cash_now["currency"]}')
 
 
 if __name__ == '__main__':
     cash_calculator = CashCalculator(1000)
     cash_calculator.add_record(Record(amount=145, comment='кофе'))
-    cash_calculator.add_record(Record(amount=1000, comment='Серёге за обед'))
+    cash_calculator.add_record(Record(amount=860, comment='Серёге за обед'))
     cash_calculator.add_record(Record(amount=3000,
                                       comment='бар в Танин др',
                                       date='04.06.2021'))
     cash_calculator.add_record(Record(amount=3000,
                                       comment='бар',
                                       date='30.05.2021'))
-    print(cash_calculator.get_week_stats())
+    print(cash_calculator.get_today_cash_remained("eur"))
     for record in cash_calculator.records:
         print(f"{record.date}")
