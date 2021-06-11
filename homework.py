@@ -92,20 +92,14 @@ class CashCalculator(Calculator):
 
 if __name__ == '__main__':
     cash_calculator = CashCalculator(1000)
-
-    # дата в параметрах не указана,git add .
-    # так что по умолчанию к записи
-    # должна автоматически добавиться сегодняшняя дата
     cash_calculator.add_record(Record(amount=145, comment='кофе'))
-    # и к этой записи тоже дата должна добавиться автоматически
     cash_calculator.add_record(Record(amount=1000, comment='Серёге за обед'))
-    # а тут пользователь указал дату, сохраняем её
     cash_calculator.add_record(Record(amount=3000,
-                                    comment='бар в Танин др',
-                                    date='04.06.2021'))
+                                      comment='бар в Танин др',
+                                      date='04.06.2021'))
     cash_calculator.add_record(Record(amount=3000,
-                                    comment='бар',
-                                    date='30.05.2021'))
+                                      comment='бар',
+                                      date='30.05.2021'))
     print(cash_calculator.get_week_stats())
     for record in cash_calculator.records:
         print(f"{record.date}")
