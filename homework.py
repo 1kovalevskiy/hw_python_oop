@@ -14,22 +14,18 @@ class Calculator:
         return self.limit - self.get_today_stats()
 
     def get_today_stats(self) -> Union[int, float]:
-        self.today_value = 0
-        self.today_value = sum([record.amount for record in self.records
-                                if record.date == dt.datetime.now().date()])
-        return self.today_value
+        return sum([record.amount for record in self.records
+                    if record.date == dt.date.today()])
 
     def check_timedelta_is_week(self, date) -> bool:
-        if (dt.date.today() - date < dt.timedelta(weeks=1)
-                and date <= dt.date.today()):
+        self.week_ago = dt.date.today() - dt.timedelta(weeks=1)
+        if (date > self.week_ago and date <= dt.date.today()):
             return True
         return False
 
     def get_week_stats(self) -> Union[int, float]:
-        self.week_value = 0
-        self.week_value = sum([record.amount for record in self.records
-                               if self.check_timedelta_is_week(record.date)])
-        return self.week_value
+        return sum([record.amount for record in self.records
+                    if self.check_timedelta_is_week(record.date)])
 
 
 class Record:
@@ -77,30 +73,20 @@ class CashCalculator(Calculator):
         """
         Method returns message about remained spending.
         """
-        self.cash_now = {"rub": self.check_limit()}
-        if self.cash_now["rub"] == 0:
+        cash_now = {"rub": (self.check_limit(), "руб")}
+        if cash_now["rub"][0] == 0:
             return "Денег нет, держись"
-        self.cash_now["usd"] = self.cash_now["rub"] / self.USD_RATE
-        self.cash_now["eur"] = self.cash_now["rub"] / self.EURO_RATE
-        if self.cash_now["rub"] > 0:
-            self.cash_now["message"] = (
-                "На сегодня осталось ")
-            self.cash_now["money"] = self.cash_now[currency]
+        cash_now["usd"] = (cash_now["rub"][0] / self.USD_RATE, "USD")
+        cash_now["eur"] = (cash_now["rub"][0] / self.EURO_RATE, "Euro")
+        try:
+            money_value, money_currency = cash_now[currency]
+        except Exception:
+            raise "Такой валюты не существует"
+        if money_value > 0:
+            return f"На сегодня осталось {money_value:.2f} {money_currency}"
         else:
-            self.cash_now["message"] = (
-                "Денег нет, держись: твой долг - ")
-            self.cash_now["money"] = -self.cash_now[currency]
-
-        if currency == "rub":
-            self.cash_now["currency"] = " руб"
-        elif currency == "usd":
-            self.cash_now["currency"] = " USD"
-        elif currency == "eur":
-            self.cash_now["currency"] = " Euro"
-
-        return (f'{self.cash_now["message"]}'
-                f'{self.cash_now["money"]:.2f}'
-                f'{self.cash_now["currency"]}')
+            return (f"Денег нет, держись: твой долг - {-money_value:.2f} "
+                    f"{money_currency}")
 
 
 if __name__ == '__main__':
