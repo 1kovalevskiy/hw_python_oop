@@ -3,12 +3,6 @@ from typing import Union
 
 
 class Calculator:
-    """
-    Класс калькулятора, от которого наследуются класс калькулятора денег,
-    а также класс калькулятора каллорий.
-    Является шаблоном, поэтому в нем определены общие методы, как:
-    add_record(), get_today_stats(), get_week_stats().
-    """
     def __init__(self, limit: Union[int, float]) -> None:
         self.limit = limit
         self.records = []
@@ -40,7 +34,7 @@ class Calculator:
 
 class Record:
     """
-    Шаблон записей о расходах или о полученных каллориях.
+    Record template of purchase of meal.
     """
     def __init__(self, amount: Union[int, float],
                  comment: str,
@@ -54,7 +48,14 @@ class Record:
 
 
 class CaloriesCalculator(Calculator):
+    """
+    Calories calculator checks today's and week's calories intake,
+    and today calories limit.
+    """
     def get_calories_remained(self) -> str:
+        """
+        Method returns message about remained calories.
+        """
         self.today_calories_remained = self.check_limit()
         if self.today_calories_remained > 0:
             return (
@@ -65,10 +66,17 @@ class CaloriesCalculator(Calculator):
 
 
 class CashCalculator(Calculator):
+    """
+    Cash calculator checks daily spending, week spending,
+    and today ballance limit.
+    """
     USD_RATE: float = 72.0
     EURO_RATE: float = 88.0
 
     def get_today_cash_remained(self, currency: str) -> str:
+        """
+        Method returns message about remained spending.
+        """
         self.cash_now = {"rub": self.check_limit()}
         if self.cash_now["rub"] == 0:
             return "Денег нет, держись"
@@ -82,12 +90,14 @@ class CashCalculator(Calculator):
             self.cash_now["message"] = (
                 "Денег нет, держись: твой долг - ")
             self.cash_now["money"] = -self.cash_now[currency]
+
         if currency == "rub":
             self.cash_now["currency"] = " руб"
         elif currency == "usd":
             self.cash_now["currency"] = " USD"
         elif currency == "eur":
             self.cash_now["currency"] = " Euro"
+
         return (f'{self.cash_now["message"]}'
                 f'{self.cash_now["money"]:.2f}'
                 f'{self.cash_now["currency"]}')
