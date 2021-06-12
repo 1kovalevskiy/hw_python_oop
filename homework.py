@@ -17,15 +17,15 @@ class Calculator:
         return sum([record.amount for record in self.records
                     if record.date == dt.date.today()])
 
-    def check_timedelta_is_week(self, date) -> bool:
-        self.week_ago = dt.date.today() - dt.timedelta(weeks=1)
-        if (date > self.week_ago and date <= dt.date.today()):
+    def check_timedelta_is_week(self, date, week_ago) -> bool:
+        if (date > week_ago and date <= dt.date.today()):
             return True
         return False
 
     def get_week_stats(self) -> Union[int, float]:
+        week_ago = dt.date.today() - dt.timedelta(weeks=1)
         return sum([record.amount for record in self.records
-                    if self.check_timedelta_is_week(record.date)])
+                    if self.check_timedelta_is_week(record.date, week_ago)])
 
 
 class Record:
@@ -100,7 +100,7 @@ if __name__ == '__main__':
                                       comment='бар в Танин др',
                                       date='04.06.2021'))
     cash_calculator.add_record(Record(amount=3000,
-                                      comment='бар',
+                                      comment='суши-бар',
                                       date='30.05.2021'))
     print(cash_calculator.get_today_cash_remained("gbp"))
     for record in cash_calculator.records:
